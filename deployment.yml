@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taruncapstone
+  namespace: default
+  labels:
+    app: taruncapstone
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: taruncapstone
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: taruncapstone
+    spec:
+      containers:
+        - name: taruncapstone
+          image: tarungirdhar1980/tarunfinalproject
+          imagePullPolicy: Always
+          name: taruncapstone
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "udacitycapstone-lb"
+spec:
+  type: LoadBalancer
+  selector:
+    app: taruncapstone
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
