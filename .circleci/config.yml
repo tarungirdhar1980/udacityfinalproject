@@ -1,4 +1,4 @@
-# Python CircleCI 2.0 configuration file
+# Python CircleCI 2.0 configuration
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
@@ -89,7 +89,9 @@ jobs:
             mv /tmp/eksctl /usr/local/bin
             export AWS_PAGER=""
             export eksclusterlist=$(aws eks  list-clusters --output text)
+            echo $eksclusterlist
             isClusterPresent=`echo $eksclusterlist | sed '/^$/d' | grep -wc taruncapstone || true`
+            echo $isClusterPresent
             if [ $isClusterPresent == 1 ]
             then           
             echo "cluster already exists"
