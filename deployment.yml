@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: taruncapstone
-          image: tarungirdhar1980/tarunfinalproject
+          image: tarungirdhar1980/taruncapstone
           imagePullPolicy: Always
           name: taruncapstone
           ports:
