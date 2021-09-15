@@ -100,7 +100,7 @@ jobs:
             eksctl create cluster --name taruncapstone --version 1.17 --nodegroup-name nworkercap --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 2 --region ap-south-1 --node-zones=ap-south-1a,ap-south-1b --node-ami-family=Ubuntu1804
             fi
  
- create-deployment:
+  create-deployment:
     docker:
     # Use the same Docker base as the project
       - image: cimg/base:2021.07
@@ -135,7 +135,7 @@ jobs:
             aws configure list
             kubectl create deployment taruncapstone --image=tarungirdhar1980/taruncapstone --replicas=4 &&
             kubectl expose deployment/taruncapstone --type="LoadBalancer" --port 80
-	    echo "Listing deployments"
+            echo "Listing deployments"
             kubectl get deployments -o wide
             echo "Listing services"
             kubectl get services -o wide
@@ -165,15 +165,7 @@ jobs:
 workflows:
   default:
     jobs:
-      - build
-      - test-app:
-          requires: [build]
-      - build-dockerimage:
-           requires: [test-app]
-      - create-cluster:
-          requires: [build-dockerimage]
       - create-deployment:
-          cluster-name: taruncapstone
           requires: [create-cluster]
       - test-cluster:
           cluster-name: taruncapstone
