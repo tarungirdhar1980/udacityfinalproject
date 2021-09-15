@@ -90,13 +90,13 @@ jobs:
             export AWS_PAGER=""
             export eksclusterlist=$(aws eks  list-clusters --output text)
             isClusterPresent=`echo $eksclusterlist | sed '/^$/d' | grep -wc taruncapstone || true`
-			if [ $isClusterPresent == 1 ]
-			  then
-			  echo "cluster already exists"
-			  else
-			  echo "cluster does not exists.. creating cluster.. please wait"
-			  eksctl create cluster --name taruncapstone --version 1.17 --nodegroup-name nworkercap --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 2 --region ap-south-1 --node-ami-family=Ubuntu1804
-			fi
+            if [ $isClusterPresent == 1 ]
+            then           
+            echo "cluster already exists"
+            else
+            echo "cluster does not exists.. creating cluster.. please wait"
+            eksctl create cluster --name taruncapstone --version 1.17 --nodegroup-name nworkercap --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 2 --region ap-south-1 --node-ami-family=Ubuntu1804
+            fi
   deployapp-to-cluster:
     executor: aws-eks/python3
     parameters:
@@ -152,6 +152,7 @@ workflows:
       - create-cluster:
           requires: [build-dockerimage]
       - deployapp-to-cluster:
+          cluster-name: taruncapstone
           requires: [create-cluster]
       - test-cluster:
           cluster-name: taruncapstone
