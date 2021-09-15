@@ -135,7 +135,7 @@ jobs:
             aws configure list
             kubectl create deployment taruncapstone --image=tarungirdhar1980/taruncapstone --replicas=4 &&
             kubectl expose deployment/taruncapstone --type="LoadBalancer" --port 80
-	          echo "Listing deployments"
+	    echo "Listing deployments"
             kubectl get deployments -o wide
             echo "Listing services"
             kubectl get services -o wide
