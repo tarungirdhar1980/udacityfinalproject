@@ -1,11 +1,11 @@
 # Python CircleCI 2.0 configuration file
 #
-# Check https://circleci.com/docs/2.0/language-python/ for more detail
+# Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2.1
 orbs:
-  aws-eks: circleci/aws-eks@1.1.0
-  kubernetes: circleci/kubernetes@0.12.0
+  aws-eks: circleci/aws-eks@1.0.3
+  kubernetes: circleci/kubernetes@0.11.2
 
 jobs:
   build:
@@ -23,13 +23,12 @@ jobs:
             . venv/bin/activate
             make install
             ls -lrt ./venv
-
       - save_cache:
           key: v1-dependencies-{{ checksum "requirements.txt" }}
           paths:
             - ./venv
 
-  lint:
+  test-app:
     docker:
     - image: circleci/python:3.7.8-stretch
     working_directory: ~/repo
@@ -74,13 +73,36 @@ jobs:
           command: |
             echo $DockerPassword | docker login --username tarungirdhar1980 --password-stdin
             ./upload_docker.sh 
-
-  create-deployment:
+  create-cluster: 
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum install -y tar gzip 
+      - run:
+          name: create taruncapstone cluster if it doesn't exists
+          command: |
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+            mv /tmp/eksctl /usr/local/bin
+            export AWS_PAGER=""
+            export eksclusterlist=$(aws eks  list-clusters --output text)
+            isClusterPresent=`echo $eksclusterlist | sed '/^$/d' | grep -wc taruncapstone || true`
+			if [ $isClusterPresent == 1 ]
+			  then
+			  echo "cluster already exists"
+			  else
+			  echo "cluster does not exists.. creating cluster.. please wait"
+			  eksctl create cluster --name taruncapstone --version 1.17 --nodegroup-name nworkercap --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 2 --region ap-south-1 --node-ami-family=Ubuntu1804
+			fi
+  deployapp-to-cluster:
     executor: aws-eks/python3
     parameters:
       cluster-name:
         description: |
-          taruncapstone
+          set up cluster
         type: string
     steps:
       - checkout
@@ -91,13 +113,20 @@ jobs:
           get-rollout-status: true
           resource-file-path: deployment.yml
           resource-name: deployment/taruncapstone
+      - run:
+          name: update image
+          command: |
+            kubectl set image deployment/taruncapstone taruncapstone=tarungirdhar1980/taruncapstone
+      - kubernetes/get-rollout-status:
+          resource-name: deployment/taruncapstone
+          watch-rollout-status: true
 
   test-cluster:
     executor: aws-eks/python3
     parameters:
       cluster-name:
         description: |
-          Name of the EKS cluster
+          cluster name
         type: string
     steps:
       - kubernetes/install
@@ -109,36 +138,25 @@ jobs:
             kubectl get nodes
             kubectl get deployment
             kubectl get pod -o wide
-            kubectl get service/tarun-lb
+            kubectl get service/taruncapstone
           name: Test cluster
        
 workflows:
   default:
     jobs:
       - build
-      - lint:
+      - test-app:
           requires: [build]
       - build-dockerimage:
-           requires: [lint]
-      - aws-eks/create-cluster:
-          cluster-name: taruncapstone
-      - create-deployment:
-          cluster-name: taruncapstone
-          requires:
-            - aws-eks/create-cluster
-      - aws-eks/update-container-image:
-          cluster-name: taruncapstone
-          container-image-updates: 'taruncapstone=tarungirdhar1980/tarunfinalproject'
-          post-steps:
-            - kubernetes/delete-resource:
-                resource-names: taruncapstone
-                resource-types: deployment
-                wait: true
-          record: true
-          requires:
-            - create-deployment
-          resource-name: deployment/taruncapstone
+           requires: [test-app]
+      - create-cluster:
+          requires: [build-dockerimage]
+      - deployapp-to-cluster:
+          requires: [create-cluster]
       - test-cluster:
           cluster-name: taruncapstone
+          requires: [deployapp-to-cluster]
+      - aws-eks/delete-cluster:
+          cluster-name: taruncapstone
           requires:
-            - aws-eks/update-container-image
+            - test-cluster
