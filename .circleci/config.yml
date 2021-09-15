@@ -165,8 +165,7 @@ jobs:
 workflows:
   default:
     jobs:
-      - create-deployment:
-          requires: [create-cluster]
+      - create-deployment
       - test-cluster:
           cluster-name: taruncapstone
           requires: [create-deployment]
