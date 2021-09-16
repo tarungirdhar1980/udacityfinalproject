@@ -158,7 +158,7 @@ workflows:
           record: true
           requires:
             - create-deployment
-          resource-name: deployment/visheshcapstone
+          resource-name: deployment/taruncapstone
       - test-cluster:
           cluster-name: taruncapstone
           requires: [create-deployment]
