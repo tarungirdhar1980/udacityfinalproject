@@ -149,11 +149,24 @@ jobs:
             mv ./kubectl /usr/local/bin/kubectl
             ls -ltr
             kubectl apply -f updatedeployment.yml
-            kubectl rollout status -w deployment/taruncapstone
+            kubectl rollout status deployment taruncapstone
        
 workflows:
   default:
     jobs:
-      - update-image
+      - build
+      - test-app:
+          requires: [build]
+      - build-dockerimage:
+           requires: [test-app]
+      - create-cluster:
+          requires: [build-dockerimage]
+      - create-deployment:
+           requires: [create-cluster]
+      - test-cluster:
+          cluster-name: taruncapstone
+          requires: [create-deployment]
+      - update-image:
+          requires: [test-cluster]
 
        
