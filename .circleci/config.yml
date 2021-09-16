@@ -149,7 +149,6 @@ workflows:
       - create-cluster:
           requires: [build-dockerimage]
       - create-deployment:
-          cluster-name: taruncapstone
-          requires: [create-cluster]
+           requires: [create-cluster]
       - test-cluster:
           requires: [create-deployment]
