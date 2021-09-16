@@ -141,7 +141,16 @@ jobs:
 workflows:
   default:
     jobs:
-      - create-deployment
+      - build
+      - test-app:
+          requires: [build]
+      - build-dockerimage:
+           requires: [test-app]
+      - create-cluster:
+          requires: [build-dockerimage]
+      - create-deployment:
+          cluster-name: taruncapstone
+          requires: [create-cluster]
       - test-cluster:
           cluster-name: taruncapstone
           requires: [create-deployment]
