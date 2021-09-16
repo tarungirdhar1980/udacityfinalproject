@@ -113,9 +113,8 @@ jobs:
             chmod +x ./kubectl
             mv ./kubectl /usr/local/bin/kubectl
             kubectl apply -f deployment.yml
-            sleep 5m
 
-test-cluster:
+  test-cluster:
     executor: aws-eks/python3
     parameters:
       cluster-name:
