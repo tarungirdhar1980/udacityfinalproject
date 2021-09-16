@@ -151,4 +151,5 @@ workflows:
       - create-deployment:
            requires: [create-cluster]
       - test-cluster:
+          cluster-name: taruncapstone
           requires: [create-deployment]
