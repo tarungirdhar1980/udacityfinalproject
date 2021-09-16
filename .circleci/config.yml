@@ -113,6 +113,7 @@ jobs:
             chmod +x ./kubectl
             mv ./kubectl /usr/local/bin/kubectl
             kubectl apply -f deployment.yml
+            sleep 2m
 
   test-cluster:
     executor: aws-eks/python3
@@ -133,6 +134,20 @@ jobs:
             kubectl get pod -o wide
             kubectl get service/udacitycapstone-lb
           name: Test cluster
+     
+  update-image:
+    docker:
+      - image:  amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Deploy image to Kubernetes
+          command: |
+            aws eks --region ap-south-1 update-kubeconfig --name taruncapstone
+            curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            mv ./kubectl /usr/local/bin/kubectl
+            kubectl set image deployments/taruncapstone taruncapstone=nanodegreeproject7 
        
 workflows:
   default:
@@ -146,18 +161,9 @@ workflows:
           requires: [build-dockerimage]
       - create-deployment:
            requires: [create-cluster]
-      - aws-eks/update-container-image:
-          cluster-name: taruncapstone
-          container-image-updates: 'taruncapstone=tarungirdhar1980/taruncapstone'
-          post-steps:
-            - kubernetes/delete-resource:
-                resource-names: taruncapstone
-                resource-types: deployment
-                wait: true
-          record: true
-          requires:
-            - create-deployment
-          resource-name: deployment/taruncapstone
       - test-cluster:
           cluster-name: taruncapstone
           requires: [create-deployment]
+      - update-image:
+          requires: [test-cluster]
+       
