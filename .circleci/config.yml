@@ -147,23 +147,12 @@ jobs:
             curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
             chmod +x ./kubectl
             mv ./kubectl /usr/local/bin/kubectl
+            ls -ltr
             kubectl apply -f updatedeployment.yml
        
 workflows:
   default:
     jobs:
-      - build
-      - test-app:
-          requires: [build]
-      - build-dockerimage:
-           requires: [test-app]
-      - create-cluster:
-          requires: [build-dockerimage]
-      - create-deployment:
-           requires: [create-cluster]
-      - test-cluster:
-          cluster-name: taruncapstone
-          requires: [create-deployment]
-      - update-image:
-          requires: [test-cluster]
+      - update-image
+
        
