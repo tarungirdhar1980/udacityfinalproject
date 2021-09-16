@@ -113,7 +113,6 @@ jobs:
             chmod +x ./kubectl
             mv ./kubectl /usr/local/bin/kubectl
             kubectl apply -f deployment.yml
-            kubectl rollout status -w deployment/taruncapstone
             sleep 2m
 
   test-cluster:
