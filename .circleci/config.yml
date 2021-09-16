@@ -113,12 +113,9 @@ jobs:
             chmod +x ./kubectl
             mv ./kubectl /usr/local/bin/kubectl
             kubectl apply -f deployment.yml
-            kubectl get nodes
-            kubectl get deployments
-            kubectl get pod -o wide
-            kubectl get service/udacitycapstone-lb
+            sleep 5m
 
-  test-cluster:
+test-cluster:
     executor: aws-eks/python3
     parameters:
       cluster-name:
@@ -150,6 +147,18 @@ workflows:
           requires: [build-dockerimage]
       - create-deployment:
            requires: [create-cluster]
+      - aws-eks/update-container-image:
+          cluster-name: taruncapstone
+          container-image-updates: 'taruncapstone=tarungirdhar1980/taruncapstone'
+          post-steps:
+            - kubernetes/delete-resource:
+                resource-names: taruncapstone
+                resource-types: deployment
+                wait: true
+          record: true
+          requires:
+            - create-deployment
+          resource-name: deployment/visheshcapstone
       - test-cluster:
           cluster-name: taruncapstone
           requires: [create-deployment]
