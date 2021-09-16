@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: taruncapstone
-          image: tarungirdhar1980/nanodegreeproject7
+          image: busybox
           imagePullPolicy: Always
           name: taruncapstone
           ports:
