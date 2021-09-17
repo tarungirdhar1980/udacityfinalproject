@@ -3,7 +3,7 @@
 # Assumes that an image is built via `run_docker.sh`
 
 # Step 1: Create dockerpath
-dockerpath="tarungirdhar1980/taruncapstone"
+dockerpath="tarungirdhar1980/taruncapstone1"
 
 # Step 2: Authenticate & tag
 echo "Docker ID and Image: $dockerpath"
