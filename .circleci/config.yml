@@ -83,21 +83,21 @@ jobs:
           command: |
             yum install -y tar gzip 
       - run:
-          name: create taruncapstone cluster if it doesn't exists
+          name: create taruncapstone1 cluster if it doesn't exists
           command: |
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             mv /tmp/eksctl /usr/local/bin
             export AWS_PAGER=""
             export eksclusterlist=$(aws eks  list-clusters --output text)
             echo $eksclusterlist
-            isClusterPresent=`echo $eksclusterlist | sed '/^$/d' | grep -wc taruncapstone || true`
+            isClusterPresent=`echo $eksclusterlist | sed '/^$/d' | grep -wc taruncapstone1 || true`
             echo $isClusterPresent
             if [ $isClusterPresent == 1 ]
             then           
             echo "cluster already exists"
             else
             echo "cluster does not exists.. creating cluster.. please wait"
-            eksctl create cluster --name taruncapstone --version 1.17 --nodegroup-name nworkercap --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 2 --region ap-south-1 --node-zones=ap-south-1a,ap-south-1b --node-ami-family=Ubuntu1804
+            eksctl create cluster --name taruncapstone1 --version 1.17 --nodegroup-name nworkercap --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 2 --region ap-south-1 --node-zones=ap-south-1a,ap-south-1b --node-ami-family=Ubuntu1804
             fi
  
   create-deployment:
@@ -108,12 +108,13 @@ jobs:
       - run:
           name: Deploy image to Kubernetes
           command: |
-            aws eks --region ap-south-1 update-kubeconfig --name taruncapstone
+            aws eks --region ap-south-1 update-kubeconfig --name taruncapstone1
             curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
             chmod +x ./kubectl
             mv ./kubectl /usr/local/bin/kubectl
             kubectl apply -f deployment.yml
-            sleep 5m
+            sleep 2m
+            kubectl get deployments -o wide
 
   test-cluster:
     executor: aws-eks/python3
@@ -132,9 +133,27 @@ jobs:
             kubectl get nodes
             kubectl get deployment
             kubectl get pod -o wide
-            kubectl get service/udacitycapstone-lb
+            kubectl get service/taruncapstone-lb
           name: Test cluster
-       
+     
+  update-image:
+    docker:
+      - image:  amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Deploy image to Kubernetes
+          command: |
+            aws eks --region ap-south-1 update-kubeconfig --name taruncapstone1
+            curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            mv ./kubectl /usr/local/bin/kubectl
+            ls -ltr
+            kubectl apply -f updatedeployment.yml
+            kubectl rollout status deployment taruncapstone1
+            echo
+            kubectl get deployments -o wide     
+            
 workflows:
   default:
     jobs:
@@ -147,18 +166,10 @@ workflows:
           requires: [build-dockerimage]
       - create-deployment:
            requires: [create-cluster]
-      - aws-eks/update-container-image:
-          cluster-name: taruncapstone
-          container-image-updates: 'taruncapstone=tarungirdhar1980/taruncapstone'
-          post-steps:
-            - kubernetes/delete-resource:
-                resource-names: taruncapstone
-                resource-types: deployment
-                wait: true
-          record: true
-          requires:
-            - create-deployment
-          resource-name: deployment/visheshcapstone
       - test-cluster:
-          cluster-name: taruncapstone
+          cluster-name: taruncapstone1
           requires: [create-deployment]
+      - update-image:
+          requires: [test-cluster]
+
+       
