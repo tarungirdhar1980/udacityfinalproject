@@ -1,6 +1,6 @@
 # udacityfinalproject
 
-Udacity Capstone Project
+Udacity Capstone Project1
 
 Screenshots for various steps have been added to screenshots directory
 
