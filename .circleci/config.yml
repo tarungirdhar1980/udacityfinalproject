@@ -114,6 +114,7 @@ jobs:
             mv ./kubectl /usr/local/bin/kubectl
             kubectl apply -f deployment.yml
             sleep 2m
+            kubectl get deployments -o wide
 
   test-cluster:
     executor: aws-eks/python3
@@ -149,7 +150,10 @@ jobs:
             mv ./kubectl /usr/local/bin/kubectl
             ls -ltr
             kubectl apply -f updatedeployment.yml
-       
+            kubectl rollout status deployment taruncapstone1
+	          echo
+	          kubectl get deployments -o wide     
+            
 workflows:
   default:
     jobs:
