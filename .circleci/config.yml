@@ -24,7 +24,7 @@ jobs:
             make install
             ls -lrt ./venv
       - save_cache:
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+          key: v2-dependencies-{{ checksum "requirements.txt" }}
           paths:
             - ./venv
 
@@ -36,8 +36,8 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
-            - v1-dependencies-
+            - v2-dependencies-{{ checksum "requirements.txt" }}
+            - v2-dependencies-
 
       - run:
           name: run lint
@@ -55,8 +55,8 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
-            - v1-dependencies-
+            - v2-dependencies-{{ checksum "requirements.txt" }}
+            - v2-dependencies-
       - setup_remote_docker:
           version: 19.03.13  
 
@@ -97,7 +97,7 @@ jobs:
             echo "cluster already exists"
             else
             echo "cluster does not exists.. creating cluster.. please wait"
-            eksctl create cluster --name taruncapstone1 --version 1.17 --nodegroup-name nworkercap --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 2 --region ap-south-1 --node-zones=ap-south-1a,ap-south-1b --node-ami-family=Ubuntu1804
+            eksctl create cluster --name taruncapstone1 --version 1.20 --nodegroup-name nworkercap --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 2 --region ap-south-1 --node-zones=ap-south-1a,ap-south-1b --node-ami-family=Ubuntu1804
             fi
  
   create-deployment:
@@ -171,5 +171,3 @@ workflows:
           requires: [create-deployment]
       - update-image:
           requires: [test-cluster]
-
-       
