@@ -150,7 +150,6 @@ jobs:
             mv ./kubectl /usr/local/bin/kubectl
             ls -ltr
             kubectl apply -f updatedeployment.yml
-            kubectl rollout status deployment taruncapstone1
             echo
             kubectl get deployments -o wide     
             
