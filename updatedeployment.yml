@@ -2,15 +2,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: taruncapstone
+  name: taruncapstone1
   namespace: default
   labels:
-    app: taruncapstone
+    app: taruncapstone1
 spec:
   replicas: 4
   selector:
     matchLabels:
-      app: taruncapstone
+      app: taruncapstone1
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -19,24 +19,24 @@ spec:
   template:
     metadata:
       labels:
-        app: taruncapstone
+        app: taruncapstone1
     spec:
       containers:
-        - name: taruncapstone
+        - name: taruncapstone1
           image: tarungirdhar1980/nanodegreeproject7
           imagePullPolicy: Always
-          name: taruncapstone
+          name: taruncapstone1
           ports:
             - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: "udacitycapstone-lb"
+  name: "taruncapstone-lb"
 spec:
   type: LoadBalancer
   selector:
-    app: taruncapstone
+    app: taruncapstone1
   ports:
     - protocol: TCP
       port: 80
