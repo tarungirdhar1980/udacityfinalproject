@@ -14,3 +14,4 @@ Werkzeug==0.16.0
 pylint
 pip
 Keras
+Theano
