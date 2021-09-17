@@ -97,7 +97,7 @@ jobs:
             echo "cluster already exists"
             else
             echo "cluster does not exists.. creating cluster.. please wait"
-            eksctl create cluster --name taruncapstone1 --version 1.18 --nodegroup-name nworkercap --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 2 --region ap-south-1 --node-zones=ap-south-1a,ap-south-1b --node-ami-family=Ubuntu1804
+            eksctl create cluster --name taruncapstone1 --version 1.17 --nodegroup-name nworkercap --node-type t2.micro --nodes 2 --nodes-min 1 --nodes-max 2 --region ap-south-1 --node-zones=ap-south-1a,ap-south-1b --node-ami-family=Ubuntu1804
             fi
  
   create-deployment:
